@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>"Itching" to Play</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <h1>"Itching" to Play</h1>
+
+    <!-- Add Games Section -->
+    <section class="controls">
+      <label for="inputArea">🎮 Add Your Games (one per line):</label>
+    <textarea id="inputArea" placeholder="https://example.itch.io/game-a&#10;https://example.itch.io/game-b"></textarea>
+      <div class="buttons">
+        <button id="pasteBtn">Paste & Load</button>
+        <button id="copyBtn">Copy</button>
+        <button id="clearBtn">Clear</button>
+      </div>
+    </section>
+
+    <!-- Wheel Section -->
+    <section class="wheel-area">
+      <div class="wheel-wrap">
+        <canvas id="wheel" width="600" height="600"></canvas>
+        <div id="pointer">▼</div>
+      </div>
+      <div class="spin-controls">
+        <button id="spinBtn">Spin</button>
+        <div id="result"></div>
+      </div>
+    </section>
+
+    <!-- Games List Section -->
+    <section class="list-area">
+      <h2 id="gamesHeader">Games</h2>
+      <ul id="items"></ul>
+    </section>
+  </main>
+
+  <script src="script.js" defer></script>
+</body>
+</html>
