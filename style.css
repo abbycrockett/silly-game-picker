@@ -1,5 +1,5 @@
 :root {
-  --bg: #0f1720;
+  --bg: #081025;
   --card: #0b1220;
   --accent: #7c3aed;
   --muted: #9aa5b1;
@@ -19,7 +19,8 @@ body {
 body {
   margin: 0;
   font-family: Inter, system-ui, 'Segoe UI', Roboto, Arial, sans-serif;
-  background: linear-gradient(180deg, #071025 0%, #081426 60%);
+  /* Use a single solid background color (lighter dark blue) to avoid color changes behind the wheel */
+  background: var(--bg);
   color: #e6eef6;
   padding: 24px;
 }

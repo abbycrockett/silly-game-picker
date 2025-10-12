@@ -3,6 +3,7 @@
 const inputArea = document.getElementById("inputArea");
 const clearBtn = document.getElementById("clearBtn");
 const pasteBtn = document.getElementById("pasteBtn");
+const loadBtn = document.getElementById("loadBtn");
 const copyBtn = document.getElementById("copyBtn");
 const itemsUl = document.getElementById("items");
 const wheelCanvas = document.getElementById("wheel");
@@ -138,7 +139,53 @@ function rebuildList() {
     hideBtn.className = "toggle-hidden";
     hideBtn.addEventListener("click", () => {
       it.hidden = !it.hidden;
+
+      // If item was hidden, remove corresponding lines from the textarea
+      if (it.hidden) {
+        try {
+          const rawLines = (inputArea.value || "").split(/\r?\n/);
+          const kept = rawLines.filter((line) => {
+            const l = line.trim();
+            if (!l) return false; // drop empty lines
+            // If the line is tab-separated like "title\turl", check the url part
+            const parts = l.split("\t");
+            if (it.url && parts.length >= 2) {
+              return parts[1].trim() !== it.url;
+            }
+            // If the line contains the url anywhere, drop it
+            if (it.url && l.includes(it.url)) return false;
+            // Fall back to checking title inclusion (less strict)
+            if (it.title && (l === it.title || l.includes(it.title))) return false;
+            return true;
+          });
+          inputArea.value = kept.join("\n");
+        } catch (e) {
+          // ignore any errors here
+        }
+      } else {
+        // If item was unhidden, append it back to the textarea (avoid duplicates)
+        try {
+          const rawLines = (inputArea.value || "").split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+          const exists = rawLines.some((line) => {
+            if (!line) return false;
+            if (it.url && line.includes(it.url)) return true;
+            if (it.title && (line === it.title || line.includes(it.title))) return true;
+            return false;
+          });
+          if (!exists) {
+            const toAdd = it.title && it.url ? `${it.title}\t${it.url}` : (it.url || it.title || "");
+            if (toAdd) {
+              rawLines.push(toAdd);
+              inputArea.value = rawLines.join("\n");
+            }
+          }
+        } catch (e) {
+          // ignore
+        }
+      }
+
       saveHidden();
+      saveToStorage();
       drawWheel();
       rebuildList();
     });
@@ -412,6 +459,42 @@ function announceWinner(finalRotation) {
     btn.addEventListener("click", () => {
       if (!orig) return;
       orig.hidden = !orig.hidden;
+      // If item was hidden via the result button, also remove its line(s) from the textarea
+      if (orig.hidden) {
+        try {
+          const rawLines = (inputArea.value || "").split(/\r?\n/);
+          const kept = rawLines.filter((line) => {
+            const l = line.trim();
+            if (!l) return false;
+            const parts = l.split("\t");
+            if (orig.url && parts.length >= 2) {
+              return parts[1].trim() !== orig.url;
+            }
+            if (orig.url && l.includes(orig.url)) return false;
+            if (orig.title && (l === orig.title || l.includes(orig.title))) return false;
+            return true;
+          });
+          inputArea.value = kept.join("\n");
+        } catch (e) {}
+      } else {
+        // unhidden: append back to textarea if not present
+        try {
+          const rawLines = (inputArea.value || "").split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+          const exists = rawLines.some((line) => {
+            if (!line) return false;
+            if (orig.url && line.includes(orig.url)) return true;
+            if (orig.title && (line === orig.title || line.includes(orig.title))) return true;
+            return false;
+          });
+          if (!exists) {
+            const toAdd = orig.title && orig.url ? `${orig.title}\t${orig.url}` : (orig.url || orig.title || "");
+            if (toAdd) {
+              rawLines.push(toAdd);
+              inputArea.value = rawLines.join("\n");
+            }
+          }
+        } catch (e) {}
+      }
       // persist and redraw
       saveHidden();
       saveToStorage();
@@ -494,17 +577,21 @@ pasteBtn.addEventListener("click", async () => {
     const text = await navigator.clipboard.readText();
     if (!text) return alert("Clipboard is empty");
     inputArea.value = text;
-    // auto-load
-    const parsed = parseLines(text.trim());
-    if (parsed.length === 0) return alert("No valid lines found in clipboard");
-    items = parsed;
-    loadHidden();
-    saveToStorage();
-    rebuildList();
-    drawWheel();
   } catch (e) {
     alert("Failed to read clipboard. Your browser may require permission.");
   }
+});
+
+// Load button: parse textarea and load items into the wheel
+loadBtn.addEventListener("click", () => {
+  const text = inputArea.value || "";
+  const parsed = parseLines(text.trim());
+  if (parsed.length === 0) return alert("No valid lines found to load");
+  items = parsed;
+  loadHidden();
+  saveToStorage();
+  rebuildList();
+  drawWheel();
 });
 
 // Copy textarea contents to clipboard
