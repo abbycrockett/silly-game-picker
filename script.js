@@ -62,6 +62,18 @@ function formatTitle(title) {
 }
 
 function parseLines(text) {
+  // Remove surrounding Discord ``code`` if present
+  if (typeof text === "string") {
+    text = text.trim();
+    // Triple backticks with optional language tag, e.g. ``` or ```txt
+    const tripleFenceMatch = text.match(/^```([^\n]*)\n([\s\S]*)\n```$/);
+    if (tripleFenceMatch) {
+      text = tripleFenceMatch[2].trim();
+    } else if (text.startsWith("``") && text.endsWith("``")) {
+      text = text.slice(2, -2).trim();
+    }
+  }
+
   const lines = text
     .split(/\r?\n/)
     .map((l) => l.trim())
@@ -155,7 +167,8 @@ function rebuildList() {
             // If the line contains the url anywhere, drop it
             if (it.url && l.includes(it.url)) return false;
             // Fall back to checking title inclusion (less strict)
-            if (it.title && (l === it.title || l.includes(it.title))) return false;
+            if (it.title && (l === it.title || l.includes(it.title)))
+              return false;
             return true;
           });
           inputArea.value = kept.join("\n");
@@ -165,15 +178,22 @@ function rebuildList() {
       } else {
         // If item was unhidden, append it back to the textarea (avoid duplicates)
         try {
-          const rawLines = (inputArea.value || "").split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+          const rawLines = (inputArea.value || "")
+            .split(/\r?\n/)
+            .map((l) => l.trim())
+            .filter(Boolean);
           const exists = rawLines.some((line) => {
             if (!line) return false;
             if (it.url && line.includes(it.url)) return true;
-            if (it.title && (line === it.title || line.includes(it.title))) return true;
+            if (it.title && (line === it.title || line.includes(it.title)))
+              return true;
             return false;
           });
           if (!exists) {
-            const toAdd = it.title && it.url ? `${it.title}\t${it.url}` : (it.url || it.title || "");
+            const toAdd =
+              it.title && it.url
+                ? `${it.title}\t${it.url}`
+                : it.url || it.title || "";
             if (toAdd) {
               rawLines.push(toAdd);
               inputArea.value = rawLines.join("\n");
@@ -471,7 +491,8 @@ function announceWinner(finalRotation) {
               return parts[1].trim() !== orig.url;
             }
             if (orig.url && l.includes(orig.url)) return false;
-            if (orig.title && (l === orig.title || l.includes(orig.title))) return false;
+            if (orig.title && (l === orig.title || l.includes(orig.title)))
+              return false;
             return true;
           });
           inputArea.value = kept.join("\n");
@@ -479,15 +500,25 @@ function announceWinner(finalRotation) {
       } else {
         // unhidden: append back to textarea if not present
         try {
-          const rawLines = (inputArea.value || "").split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+          const rawLines = (inputArea.value || "")
+            .split(/\r?\n/)
+            .map((l) => l.trim())
+            .filter(Boolean);
           const exists = rawLines.some((line) => {
             if (!line) return false;
             if (orig.url && line.includes(orig.url)) return true;
-            if (orig.title && (line === orig.title || line.includes(orig.title))) return true;
+            if (
+              orig.title &&
+              (line === orig.title || line.includes(orig.title))
+            )
+              return true;
             return false;
           });
           if (!exists) {
-            const toAdd = orig.title && orig.url ? `${orig.title}\t${orig.url}` : (orig.url || orig.title || "");
+            const toAdd =
+              orig.title && orig.url
+                ? `${orig.title}\t${orig.url}`
+                : orig.url || orig.title || "";
             if (toAdd) {
               rawLines.push(toAdd);
               inputArea.value = rawLines.join("\n");
@@ -504,14 +535,11 @@ function announceWinner(finalRotation) {
       drawWheel();
       // update button label
       btn.textContent = orig.hidden ? "Unhide" : "Hide";
-      // update result text to reflect hidden state
-      if (orig.hidden) {
-        resultDiv.appendChild(document.createTextNode(" (hidden)"));
-      }
     });
     resultDiv.appendChild(btn);
   } else {
-    resultDiv.textContent = "Selected: (none)";
+    // Leave result empty so CSS can hide the result box when nothing is selected
+    resultDiv.textContent = "        ";
   }
 
   // Start winner animation

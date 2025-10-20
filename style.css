@@ -2,6 +2,8 @@
   --bg: #081025;
   --card: #0b1220;
   --accent: #7c3aed;
+  --link: #2a7bff; /* accessible blue */
+  --link-hover: #6ea8ff;
   --muted: #9aa5b1;
   --glass: rgba(255, 255, 255, 0.03);
 }
@@ -229,9 +231,48 @@ button:hover {
   align-items: center;
 }
 
+/* Result display under the spin button */
 #result {
-  margin-top: 8px;
+  margin-top: 16px; /* a bit more space below the button */
   color: var(--muted);
+  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.015));
+  padding: 10px 14px;
+  border-radius: 10px;
+  min-width: 220px;
+  text-align: center;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.45);
+  border: 1px solid rgba(255,255,255,0.04);
+  font-weight: 600;
+  display: inline-block;
+}
+
+#result a {
+  color: var(--link);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+#result a:hover {
+  text-decoration: underline;
+  color: var(--link-hover);
+}
+
+/* Keep result box reserved to avoid layout shift when it appears.
+   Use visibility/opacity to hide while preserving space. */
+#result {
+  /* ensure a minimum height so the spin button doesn't move when result appears */
+  min-height: 44px;
+}
+
+#result:empty {
+  visibility: hidden;
+  opacity: 0;
+  /* keep space by not changing display or height */
+}
+
+#result:not(:empty) {
+  visibility: visible;
+  opacity: 1;
 }
 
 .list-area {
@@ -264,6 +305,24 @@ button:hover {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* Link colors: use accent for readability and ensure hover/visited states */
+a,
+.item-title {
+  color: var(--link);
+  text-decoration: none;
+}
+
+a:hover,
+.item-title:hover {
+  color: var(--link-hover);
+  text-decoration: underline;
+}
+
+a:visited,
+.item-title:visited {
+  color: #5b7fd6; /* a darker muted blue for visited links */
 }
 
 .item-actions {
